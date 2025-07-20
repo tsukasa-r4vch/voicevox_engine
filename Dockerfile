@@ -24,7 +24,7 @@ RUN set -eux; \
         "${LIST_NAME}" > ./curl.txt; \
     curl -fL --retry 3 --retry-delay 5 --parallel --config ./curl.txt; \
     7zr x "$(head -1 "./${LIST_NAME}")"; \
-    find ./linux-cpu/model/ -mindepth 1 -maxdepth 1 ! -name "himari" -exec rm -rf {} +; \
+    find ./linux-cpu/model/ -mindepth 1 -maxdepth 1 -type d ! -name "himari" -exec rm -rf {} +; \
     mv ./linux-cpu /opt/voicevox_engine; \
     rm -rf ./*
 
