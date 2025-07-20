@@ -49,6 +49,9 @@ COPY --from=download-engine-env /opt/voicevox_engine /opt/voicevox_engine
 
 COPY ./voicevox_engine/core/bin/linux/libcore.so ./voicevox_engine/core/libcore.so
 
+COPY ./himari-only/metas.json /opt/voicevox_engine/model/metas.json
+COPY ./himari-only/speakers.json /opt/voicevox_engine/model/speakers.json
+
 ARG VOICEVOX_RESOURCE_VERSION=0.24.1
 RUN curl -fLo "/opt/voicevox_engine/README.md" --retry 3 --retry-delay 5 \
     "https://raw.githubusercontent.com/VOICEVOX/voicevox_resource/${VOICEVOX_RESOURCE_VERSION}/engine/README.md"
