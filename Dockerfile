@@ -9,12 +9,7 @@ WORKDIR /work
 
 RUN apt-get update && apt-get install -y \
     curl \
-    gosu \
-    git \
-    cmake \
-    build-essential \
-    python3-dev \
-    python3-pip \
+    p7zip-full \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ARG VOICEVOX_ENGINE_REPOSITORY
@@ -29,7 +24,6 @@ RUN set -eux; \
         "${LIST_NAME}" > ./curl.txt; \
     curl -fL --retry 3 --retry-delay 5 --parallel --config ./curl.txt; \
     7zr x "$(head -1 "./${LIST_NAME}")"; \
-    # modelフォルダはlinux-cpu直下なのでパスを変更 \
     find ./linux-cpu/model/ -mindepth 1 -maxdepth 1 ! -name "himari" -exec rm -rf {} +; \
     mv ./linux-cpu /opt/voicevox_engine; \
     rm -rf ./*
@@ -49,28 +43,20 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 一般ユーザー作成（gosu用）
 RUN useradd --create-home user
 
-# VOICEVOX ENGINE 本体
 COPY --from=download-engine-env /opt/voicevox_engine /opt/voicevox_engine
 
-# コアライブラリ（libcore.so）をコピー（必要に応じてパス調整）
 COPY ./voicevox_engine/core/bin/linux/libcore.so ./voicevox_engine/core/libcore.so
 
-# READMEを取得
 ARG VOICEVOX_RESOURCE_VERSION=0.24.1
 RUN curl -fLo "/opt/voicevox_engine/README.md" --retry 3 --retry-delay 5 \
     "https://raw.githubusercontent.com/VOICEVOX/voicevox_resource/${VOICEVOX_RESOURCE_VERSION}/engine/README.md"
 
-# Pythonパッケージインストール（requirements.txtは同じディレクトリにある想定）
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
 RUN pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir git+https://github.com/r9y9/pyopenjtalk.git
-    
-# 起動スクリプト
+
 COPY --chmod=775 <<EOF /entrypoint.sh
 #!/bin/bash
 set -eux
@@ -81,6 +67,6 @@ EOF
 ENTRYPOINT [ "/entrypoint.sh" ]
 CMD [ "gosu", "user", "/opt/voicevox_engine/run", "--host", "0.0.0.0" ]
 
-# === GPU対応バージョン（必要に応じて使用） ===
+# === GPU対応オプション ===
 FROM runtime-env AS runtime-nvidia-env
 CMD [ "gosu", "user", "/opt/voicevox_engine/run", "--use_gpu", "--host", "0.0.0.0" ]
