@@ -9,7 +9,12 @@ WORKDIR /work
 
 RUN apt-get update && apt-get install -y \
     curl \
-    p7zip-full \
+    gosu \
+    git \
+    cmake \
+    build-essential \
+    python3-dev \
+    python3-pip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ARG VOICEVOX_ENGINE_REPOSITORY
@@ -62,6 +67,9 @@ RUN curl -fLo "/opt/voicevox_engine/README.md" --retry 3 --retry-delay 5 \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir git+https://github.com/r9y9/pyopenjtalk.git
+    
 # 起動スクリプト
 COPY --chmod=775 <<EOF /entrypoint.sh
 #!/bin/bash
