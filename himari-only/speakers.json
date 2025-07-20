@@ -1,26 +1,13 @@
-[
-  {
-    "name": "ñªñ¬Ç–Ç‹ÇË",
-    "speaker_uuid": "dd5f4ffb-7993-4046-a7e4-d91546f63c92",
+{
+  "0": {
+    "name": "ÂÜ•È≥¥„Å≤„Åæ„Çä",
     "styles": [
       {
-        "id": 47,
-        "name": "ÉmÅ[É}Éã"
+        "id": 0,
+        "name": "„Éé„Éº„Éû„É´"
       }
     ],
-    "policy": "https://voicevox.hiroshiba.jp/terms/",
-    "portrait": "himari/icon.png",
-    "style_infos": {
-      "47": {
-        "id": 47,
-        "icon": "himari/icon.png",
-        "portrait": "himari/icon.png",
-        "voice_samples": [
-          "himari/sample1.wav",
-          "himari/sample2.wav",
-          "himari/sample3.wav"
-        ]
-      }
-    }
+    "speaker_uuid": "himari_uuid_placeholder",
+    "style_ids": [0]
   }
-]
+}
