@@ -61,8 +61,9 @@ COPY --chmod=775 <<EOF /entrypoint.sh
 #!/bin/bash
 set -eux
 cat /opt/voicevox_engine/README.md > /dev/stderr
-exec "\$@"
+exec "\$@" --port "\${PORT:-5000}"
 EOF
 
 ENTRYPOINT [ "/entrypoint.sh" ]
 CMD [ "gosu", "user", "/opt/voicevox_engine/run", "--host", "0.0.0.0" ]
+
