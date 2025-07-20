@@ -1,0 +1,26 @@
+[
+  {
+    "name": "ñªñ¬Ç–Ç‹ÇË",
+    "speaker_uuid": "dd5f4ffb-7993-4046-a7e4-d91546f63c92",
+    "styles": [
+      {
+        "id": 47,
+        "name": "ÉmÅ[É}Éã"
+      }
+    ],
+    "policy": "https://voicevox.hiroshiba.jp/terms/",
+    "portrait": "himari/icon.png",
+    "style_infos": {
+      "47": {
+        "id": 47,
+        "icon": "himari/icon.png",
+        "portrait": "himari/icon.png",
+        "voice_samples": [
+          "himari/sample1.wav",
+          "himari/sample2.wav",
+          "himari/sample3.wav"
+        ]
+      }
+    }
+  }
+]
