@@ -24,11 +24,9 @@ RUN set -eux; \
         "${LIST_NAME}" > ./curl.txt; \
     curl -fL --retry 3 --retry-delay 5 --parallel --config ./curl.txt; \
     7zr x "$(head -1 "./${LIST_NAME}")"; \
-    \
-    # 冥鳴ひまり以外のモデルを削除する例（modelディレクトリ内）\
-    find ./model/ -mindepth 1 -maxdepth 1 ! -name "himari" -exec rm -rf {} +; \
-    \
-    mv ./${VOICEVOX_ENGINE_TARGET} /opt/voicevox_engine; \
+    # modelフォルダはlinux-cpu直下なのでパスを変更 \
+    find ./linux-cpu/model/ -mindepth 1 -maxdepth 1 ! -name "himari" -exec rm -rf {} +; \
+    mv ./linux-cpu /opt/voicevox_engine; \
     rm -rf ./*
 
 # === ランタイムフェーズ ===
