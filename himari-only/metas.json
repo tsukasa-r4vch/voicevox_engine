@@ -1,16 +1,13 @@
-{
-  "version": "0.1",
-  "meta": {
-    "speakers": [
+[
+  {
+    "name": "冥鳴ひまり",
+    "speaker_uuid": "b72a759c-cf08-49f4-bd06-1b62fdbb4276",
+    "styles": [
       {
-        "name": "冥鳴ひまり",
-        "styles": [
-          {
-            "id": 0,
-            "name": "ノーマル"
-          }
-        ]
+        "name": "ノーマル",
+        "id": 47
       }
-    ]
+    ],
+    "version": "0.0.1"
   }
-}
+]
