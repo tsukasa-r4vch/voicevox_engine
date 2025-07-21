@@ -19,10 +19,10 @@ done
 
 # キャッシュ生成（ダミーの合成リクエストを1回）
 echo "Generating cache..."
-curl -sf -X POST "http://localhost:${PORT:-5000}/audio_query?speaker=0&text=テスト" \
+curl -sf -X POST "http://localhost:${PORT:-5000}/audio_query?speaker=14&text=テスト" \
   -H "Content-Type: application/json" > /tmp/query.json || true
 
-curl -sf -X POST "http://localhost:${PORT:-5000}/synthesis?speaker=0" \
+curl -sf -X POST "http://localhost:${PORT:-5000}/synthesis?speaker=14" \
   -H "Content-Type: application/json" \
   -d @/tmp/query.json --output /dev/null || true
 
