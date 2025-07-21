@@ -1,13 +1,21 @@
-{
-  "0": {
+[
+  {
     "name": "冥鳴ひまり",
+    "speaker_uuid": "b72a759c-cf08-49f4-bd06-1b62fdbb4276",
     "styles": [
       {
-        "id": 0,
-        "name": "ノーマル"
+        "name": "ノーマル",
+        "id": 47
       }
     ],
-    "speaker_uuid": "himari_uuid_placeholder",
-    "style_ids": [0]
+    "policy": "VOICEVOX:冥鳴ひまり は、四国めたん・ずんだもんと同様の「コーパスの取り扱いに関するガイドライン」に従います。",
+    "portrait": "https://static.tts.quest/voicevox/portrait/himari_normal.png",
+    "style_infos": [
+      {
+        "id": 47,
+        "icon": "https://static.tts.quest/voicevox/icon/himari_normal.png",
+        "portrait": "https://static.tts.quest/voicevox/portrait/himari_normal.png"
+      }
+    ]
   }
-}
+]
