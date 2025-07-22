@@ -4,7 +4,6 @@ ARG BASE_IMAGE=ubuntu:22.04
 
 # === Coreビルドフェーズ ===
 FROM ${BASE_IMAGE} AS build-core
-
 WORKDIR /work
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -17,8 +16,10 @@ RUN apt-get update && apt-get install -y \
     libsndfile1-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# VOICEVOX coreをクローン
-RUN git clone --recursive https://github.com/VOICEVOX/voicevox_core.git
+# voicevox_core クローンとサブモジュール初期化
+RUN git clone https://github.com/VOICEVOX/voicevox_core.git && \
+    cd voicevox_core && git submodule update --init --recursive
+
 WORKDIR /work/voicevox_core
 
 # CPU最適化ビルド（AVXなどのネイティブ命令セット）
