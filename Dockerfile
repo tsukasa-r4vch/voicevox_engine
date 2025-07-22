@@ -1,33 +1,34 @@
 # syntax=docker/dockerfile:1
 
-ARG BASE_IMAGE=mirror.gcr.io/ubuntu:22.04
+ARG BASE_IMAGE=ubuntu:22.04
 
-###########################
-# === ビルドフェーズ === #
-###########################
+# === Coreビルドフェーズ ===
 FROM ${BASE_IMAGE} AS build-core
+
+WORKDIR /work
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y \
     git \
+    curl \
     cmake \
-    clang \
     build-essential \
-    libssl-dev \
+    clang \
+    libsndfile1-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /work
-RUN git clone --depth=1 https://github.com/VOICEVOX/voicevox_core.git
+# VOICEVOX coreをクローン
+RUN git clone --recursive https://github.com/VOICEVOX/voicevox_core.git
 WORKDIR /work/voicevox_core
 
-# CPU向け Release + AVX 最適化
+# CPU最適化ビルド（AVXなどのネイティブ命令セット）
 RUN cmake -B build -DCMAKE_BUILD_TYPE=Release -DVOICEVOX_CORE_USE_CPU=ON -DCMAKE_CXX_FLAGS="-march=native"
 RUN cmake --build build -j$(nproc)
 
+# 最適化libcore.soをコピー
+RUN cp build/core/libcore.so /opt/libcore.so
 
-###############################
-# === エンジンDLフェーズ === #
-###############################
+# === ダウンロードフェーズ ===
 FROM ${BASE_IMAGE} AS download-engine-env
 ARG DEBIAN_FRONTEND=noninteractive
 WORKDIR /work
@@ -41,6 +42,7 @@ ARG VOICEVOX_ENGINE_REPOSITORY
 ARG VOICEVOX_ENGINE_VERSION
 ARG VOICEVOX_ENGINE_TARGET
 
+# エンジン本体をダウンロードして展開
 RUN set -eux; \
     LIST_NAME=voicevox_engine-${VOICEVOX_ENGINE_TARGET}-${VOICEVOX_ENGINE_VERSION}.7z.txt; \
     curl -fLO --retry 3 --retry-delay 5 "https://github.com/${VOICEVOX_ENGINE_REPOSITORY}/releases/download/${VOICEVOX_ENGINE_VERSION}/${LIST_NAME}"; \
@@ -50,15 +52,16 @@ RUN set -eux; \
     curl -fL --retry 3 --retry-delay 5 --parallel --config ./curl.txt; \
     7zr x "$(head -1 "./${LIST_NAME}")"
 
+# 冥鳴ひまり以外のモデルを削除
 RUN find ./linux-cpu/model/ -mindepth 1 -maxdepth 1 -type d ! -name "himari" -exec rm -rf {} +
+
+# メタファイル差し替え（himari-only）
 COPY ./himari-only/metas.json ./linux-cpu/model/metas.json
 COPY ./himari-only/speakers.json ./linux-cpu/model/speakers.json
+
 RUN mv ./linux-cpu /opt/voicevox_engine && rm -rf ./*
 
-
-###########################
-# === ランタイムフェーズ === #
-###########################
+# === ランタイムフェーズ ===
 FROM ${BASE_IMAGE} AS runtime-env
 ARG DEBIAN_FRONTEND=noninteractive
 WORKDIR /opt/voicevox_engine
@@ -75,46 +78,61 @@ RUN apt-get update && apt-get install -y \
 
 RUN useradd --create-home user
 
+# エンジン本体コピー
 COPY --from=download-engine-env /opt/voicevox_engine /opt/voicevox_engine
-COPY --from=build-core /work/voicevox_core/build/core/libcore.so /opt/voicevox_engine/core/libcore.so
 
+# 最適化libcore.soコピー
+COPY --from=build-core /opt/libcore.so /opt/voicevox_engine/core/libcore.so
+
+# メタファイル再度上書き（念のため）
 COPY ./himari-only/metas.json /opt/voicevox_engine/model/metas.json
 COPY ./himari-only/speakers.json /opt/voicevox_engine/model/speakers.json
 
+# README取得（Renderのstderr出力対策）
 ARG VOICEVOX_RESOURCE_VERSION=0.24.1
 RUN curl -fLo "/opt/voicevox_engine/README.md" --retry 3 --retry-delay 5 \
     "https://raw.githubusercontent.com/VOICEVOX/voicevox_resource/${VOICEVOX_RESOURCE_VERSION}/engine/README.md"
 
+# Python依存
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir git+https://github.com/r9y9/pyopenjtalk.git
 
+# Entrypoint スクリプト
 COPY --chmod=775 <<EOF /entrypoint.sh
 #!/bin/bash
 set -eux
-cat /opt/voicevox_engine/README.md > /dev/stderr &
-"$@" --port "${PORT:-5000}" &
-ENGINE_PID=$!
 
+# 利用規約をstderrに出す(Render対策)
+cat /opt/voicevox_engine/README.md > /dev/stderr &
+
+# エンジン起動 (バックグラウンド)
+"\$@" --port "\${PORT:-5000}" &
+ENGINE_PID=\$!
+
+# エンジンの起動を待つ (最大20秒)
 for i in {1..20}; do
   sleep 1
-  if curl -sf "http://localhost:${PORT:-5000}/version" >/dev/null; then
+  if curl -sf "http://localhost:\${PORT:-5000}/version" >/dev/null; then
     echo "VOICEVOX Engine is up"
     break
   fi
-  echo "Waiting for engine..."
 done
 
+# キャッシュ生成
 echo "Generating cache..."
-curl -sf -X POST "http://localhost:${PORT:-5000}/audio_query?speaker=14&text=テスト" \
+curl -sf -X POST "http://localhost:\${PORT:-5000}/audio_query?speaker=14&text=テスト" \
   -H "Content-Type: application/json" > /tmp/query.json || true
 
-curl -sf -X POST "http://localhost:${PORT:-5000}/synthesis?speaker=14" \
+curl -sf -X POST "http://localhost:\${PORT:-5000}/synthesis?speaker=14" \
   -H "Content-Type: application/json" \
   -d @/tmp/query.json --output /dev/null || true
 
-wait "$ENGINE_PID"
+# 前景プロセスに戻す
+wait "\$ENGINE_PID"
 EOF
 
-ENTRYPOINT [ "/entrypoint.sh" ]
-CMD [ "gosu", "user", "/opt/voicevox_engine/run", "--host", "0.0.0.0", "--cpu_num_threads=1" ]
+ENTRYPOINT ["/entrypoint.sh"]
+
+# CPU数を制限しつつ高速化（Renderメモリ節約用）
+CMD ["gosu", "user", "/opt/voicevox_engine/run", "--host", "0.0.0.0", "--cpu_num_threads=1"]
