@@ -67,4 +67,4 @@ RUN pip install --no-cache-dir -r requirements.txt && \
 COPY --chmod=775 ./entrypoint.sh /entrypoint.sh
 
 ENTRYPOINT [ "/entrypoint.sh" ]
-CMD [ "gosu", "user", "/opt/voicevox_engine/run", "--host", "0.0.0.0", "--cpu_num_threads=2", "--load_all_models=false" ]
+CMD [ "gosu", "user", "/opt/voicevox_engine/run", "--host", "0.0.0.0", "--cpu_num_threads=2"　]
