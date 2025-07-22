@@ -1,14 +1,12 @@
 #!/bin/bash
 set -eux
 
-# 利用規約の表示（Renderログ用）
 cat /opt/voicevox_engine/README.md > /dev/stderr &
 
-# VOICEVOX エンジン起動（ポート指定）
-/opt/voicevox_engine/run --host 0.0.0.0 --port "${PORT:-5000}" --cpu_num_threads=2 &
+"$@" --port "${PORT:-5000}" &
 ENGINE_PID=$!
 
-# エンジンの起動を待機（最大20秒）
+# 起動確認待ち
 for i in {1..20}; do
   sleep 1
   if curl -sf "http://localhost:${PORT:-5000}/version" >/dev/null; then
@@ -17,14 +15,23 @@ for i in {1..20}; do
   fi
 done
 
-# キャッシュ生成（テスト合成）
-echo "Generating cache..."
-curl -sf -X POST "http://localhost:${PORT:-5000}/audio_query?speaker=14&text=テスト" \
+# プリウォーム（キャッシュ生成を強化）
+echo "Warming up..."
+TEXT="これはテストです"
+curl -sf -X POST "http://localhost:${PORT:-5000}/audio_query?speaker=14&text=${TEXT}" \
   -H "Content-Type: application/json" > /tmp/query.json || true
 
-curl -sf -X POST "http://localhost:${PORT:-5000}/synthesis?speaker=14" \
-  -H "Content-Type: application/json" \
-  -d @/tmp/query.json --output /dev/null || true
+curl -sf -X POST "http://localhost:${PORT:-5000}/accent_phrases?speaker=14" \
+  -H "Content-Type: application/json" -d @/tmp/query.json > /dev/null || true
 
-# VOICEVOX エンジンの前景復帰
+curl -sf -X POST "http://localhost:${PORT:-5000}/mora_length?speaker=14" \
+  -H "Content-Type: application/json" -d @/tmp/query.json > /dev/null || true
+
+curl -sf -X POST "http://localhost:${PORT:-5000}/mora_pitch?speaker=14" \
+  -H "Content-Type: application/json" -d @/tmp/query.json > /dev/null || true
+
+curl -sf -X POST "http://localhost:${PORT:-5000}/synthesis?speaker=14" \
+  -H "Content-Type: application/json" -d @/tmp/query.json --output /dev/null || true
+
+# エンジンがバックグラウンド起動中 → 前面に戻す
 wait "$ENGINE_PID"
