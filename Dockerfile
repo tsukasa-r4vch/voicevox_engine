@@ -17,16 +17,11 @@ RUN apt-get update && apt-get install -y \
     clang \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
     
-RUN git clone --recurse-submodules https://github.com/VOICEVOX/voicevox_core.git && \
+RUN git clone https://github.com/VOICEVOX/voicevox_core.git && \
     cd voicevox_core && \
-    git checkout release-0.15 && \
-    cd core && \
-    cmake -B ../build -S . \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DVOICEVOX_CORE_USE_CPU=ON \
-          -DCMAKE_CXX_FLAGS="-march=native" && \
-    cmake --build ../build -j$(nproc) && \
-    cp ../build/libcore.so /build/libcore.so
+    ls -la && \
+    cat README.md
+
 
 # ============================
 FROM ubuntu:22.04 AS runtime
