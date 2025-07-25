@@ -22,7 +22,7 @@ RUN git clone https://github.com/VOICEVOX/voicevox_core.git && \
     git fetch --tags && \
     git tag && \
     git branch -a && \
-    git checkout v0.14.4 && \
+    git checkout 0.14.4 && \   # ここを v0.14.4 → 0.14.4 に修正
     git submodule update --init --recursive && \
     ls -la && \
     cat CMakeLists.txt || echo "CMakeLists.txt not found" && \
