@@ -16,16 +16,17 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     clang \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
-    
+
 RUN git clone --recurse-submodules https://github.com/VOICEVOX/voicevox_core.git && \
     cd voicevox_core && \
     git checkout release-0.15 && \
     git submodule update --init --recursive && \
-    cmake -B build -S . \
+    cmake -B build -S core \
           -DCMAKE_BUILD_TYPE=Release \
           -DVOICEVOX_CORE_USE_CPU=ON \
           -DCMAKE_CXX_FLAGS="-march=native" && \
     cmake --build build -j$(nproc) && \
+    mkdir -p /build && \
     cp build/libcore.so /build/libcore.so
 
 
@@ -43,8 +44,6 @@ RUN apt-get update && apt-get install -y \
 ARG VOICEVOX_ENGINE_REPO=VOICEVOX/voicevox_engine
 ARG VOICEVOX_ENGINE_TAG=0.14.5
 
-RUN apt-get update && apt-get install -y p7zip-full curl && apt-get clean
-
 RUN set -eux; \
     LIST_NAME=voicevox_engine-linux-cpu-${VOICEVOX_ENGINE_TAG}.7z.txt; \
     curl -fLO "https://github.com/${VOICEVOX_ENGINE_REPO}/releases/download/${VOICEVOX_ENGINE_TAG}/${LIST_NAME}"; \
@@ -60,7 +59,6 @@ RUN set -eux; \
     cd ..; \
     rm -rf tmp_linux_cpu; \
     rm -rf ./*
-
 
 # libcore.so 差し替え
 COPY --from=build-core /build/libcore.so /opt/voicevox_engine/core/libcore.so
