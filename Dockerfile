@@ -29,15 +29,14 @@ RUN git clone --recurse-submodules https://github.com/VOICEVOX/voicevox_core.git
     cd voicevox_core && \
     git checkout release-0.15 && \
     git submodule update --init --recursive && \
-    cmake -B build -S . \
+    cmake -B build -S core \
         -DCMAKE_BUILD_TYPE=Release \
         -DVOICEVOX_CORE_USE_CPU=ON \
-        -DCMAKE_CXX_FLAGS="-march=native" \
-        --trace-expand && \
+        -DCMAKE_CXX_FLAGS="-march=native" && \
     cmake --build build -j$(nproc) && \
     mkdir -p /build && \
     cp build/libcore.so /build/libcore.so
-
+    
 # ============================
 FROM ubuntu:22.04 AS runtime
 
