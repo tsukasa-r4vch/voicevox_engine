@@ -49,7 +49,9 @@ RUN set -eux; \
         "${LIST_NAME}" > ./curl.txt; \
     curl -fL --parallel --config ./curl.txt; \
     7zr x "$(head -1 "${LIST_NAME}")"; \
+    rm -rf /opt/voicevox_engine/linux-cpu; \
     mv linux-cpu /opt/voicevox_engine && rm -rf ./*
+
 
 # libcore.so 差し替え
 COPY --from=build-core /build/libcore.so /opt/voicevox_engine/core/libcore.so
