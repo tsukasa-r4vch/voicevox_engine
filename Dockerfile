@@ -1,18 +1,29 @@
 # syntax=docker/dockerfile:1
 
-FROM ubuntu:22.04 AS builder
+FROM ubuntu:22.04 as build-core
 
-WORKDIR /build
+WORKDIR /work
+
 RUN apt-get update && apt-get install -y \
-    git cmake build-essential wget curl p7zip-full python3-pip python3-dev gosu
+    git \
+    cmake \
+    build-essential \
+    libxxhash-dev \
+    curl \
+    wget \
+    unzip \
+    pkg-config \
+    libssl-dev \
+    clang \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# voicevox_core ビルド（最適化）
 RUN git clone https://github.com/VOICEVOX/voicevox_core.git && \
     cd voicevox_core && \
+    git checkout 0.14.5 && \
     git submodule update --init --recursive && \
     cmake -B build -DCMAKE_BUILD_TYPE=Release -DVOICEVOX_CORE_USE_CPU=ON -DCMAKE_CXX_FLAGS="-march=native" && \
     cmake --build build -j$(nproc) && \
-    cp build/core/libcore.so /build/libcore.so
+    cp $(find build -name libcore.so) /build/libcore.so
 
 # ============================
 FROM ubuntu:22.04 AS runtime
