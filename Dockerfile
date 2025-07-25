@@ -17,19 +17,26 @@ RUN apt-get update && apt-get install -y \
     clang \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+FROM ubuntu:22.04 as build-core
+
+WORKDIR /work
+
+RUN apt-get update && apt-get install -y \
+    git cmake build-essential libxxhash-dev curl wget unzip pkg-config libssl-dev clang ninja-build libc++-dev libc++abi-dev && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
 RUN git clone --recurse-submodules https://github.com/VOICEVOX/voicevox_core.git && \
     cd voicevox_core && \
     git checkout release-0.15 && \
     git submodule update --init --recursive && \
-    ls -la && \
     cmake -B build -S . \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DVOICEVOX_CORE_USE_CPU=ON \
-          -DCMAKE_CXX_FLAGS="-march=native" && \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DVOICEVOX_CORE_USE_CPU=ON \
+        -DCMAKE_CXX_FLAGS="-march=native" \
+        --trace-expand && \
     cmake --build build -j$(nproc) && \
     mkdir -p /build && \
     cp build/libcore.so /build/libcore.so
-
 
 # ============================
 FROM ubuntu:22.04 AS runtime
