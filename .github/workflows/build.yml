@@ -10,7 +10,7 @@ jobs:
 
     permissions:
       contents: read
-      packages: write  # ← GHCR に push するにはこれが必要
+      packages: write  # ← GHCR に push するにはこれが必要　
 
     steps:
       - name: Checkout repository
