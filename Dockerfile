@@ -21,13 +21,9 @@ RUN apt-get update && apt-get install -y \
 RUN git clone https://github.com/VOICEVOX/voicevox_core.git && \
     cd voicevox_core && \
     git fetch --tags && \
-    git tag && \
-    git branch -a && \
-    git checkout 0.14.4 && \
+    git checkout 0.14.5 && \
     git submodule update --init --recursive && \
-    ls -la && \
-    cat CMakeLists.txt || echo "CMakeLists.txt not found" && \
-    cmake -B build -DCMAKE_BUILD_TYPE=Release -DVOICEVOX_CORE_USE_CPU=ON -DCMAKE_CXX_FLAGS="-march=native" && \
+    cmake -B build -S example/cpp/unix -DCMAKE_BUILD_TYPE=Release -DVOICEVOX_CORE_USE_CPU=ON -DCMAKE_CXX_FLAGS="-march=native" && \
     cmake --build build -j$(nproc) && \
     cp $(find build -name libcore.so) /build/libcore.so
 
