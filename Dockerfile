@@ -27,9 +27,18 @@ RUN apt-get update && apt-get install -y \
 # voicevox_engine 取得＆展開
 ARG VOICEVOX_ENGINE_REPO=VOICEVOX/voicevox_engine
 ARG VOICEVOX_ENGINE_TAG=0.14.5
-RUN curl -LO https://github.com/${VOICEVOX_ENGINE_REPO}/releases/download/${VOICEVOX_ENGINE_TAG}/voicevox_engine-linux-cpu-${VOICEVOX_ENGINE_TAG}.7z && \
-    7zr x voicevox_engine-linux-cpu-${VOICEVOX_ENGINE_TAG}.7z && \
-    mv linux-cpu /opt/voicevox_engine && rm voicevox_engine*.7z
+
+RUN apt-get update && apt-get install -y p7zip-full curl && apt-get clean
+
+RUN set -eux; \
+    LIST_NAME=voicevox_engine-linux-cpu-${VOICEVOX_ENGINE_TAG}.7z.txt; \
+    curl -fLO "https://github.com/${VOICEVOX_ENGINE_REPO}/releases/download/${VOICEVOX_ENGINE_TAG}/${LIST_NAME}"; \
+    awk -v "repo=${VOICEVOX_ENGINE_REPO}" -v "tag=${VOICEVOX_ENGINE_TAG}" \
+        '{ print "url = \"https://github.com/" repo "/releases/download/" tag "/" $0 "\"\noutput = \"" $0 "\"" }' \
+        "${LIST_NAME}" > ./curl.txt; \
+    curl -fL --parallel --config ./curl.txt; \
+    7zr x "$(head -1 "${LIST_NAME}")"; \
+    mv linux-cpu /opt/voicevox_engine && rm -rf ./*
 
 # libcore.so 差し替え
 COPY --from=builder /build/libcore.so /opt/voicevox_engine/core/libcore.so
