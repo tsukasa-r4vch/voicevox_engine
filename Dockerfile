@@ -17,16 +17,17 @@ RUN apt-get update && apt-get install -y \
     clang \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# ここを v0.14.4 → 0.14.4 に修正
 RUN git clone https://github.com/VOICEVOX/voicevox_core.git && \
     cd voicevox_core && \
     git fetch --tags && \
     git checkout 0.14.5 && \
     git submodule update --init --recursive && \
-    cmake -B build -S example/cpp/unix -DCMAKE_BUILD_TYPE=Release -DVOICEVOX_CORE_USE_CPU=ON -DCMAKE_CXX_FLAGS="-march=native" && \
+    cmake -B build -S core \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DVOICEVOX_CORE_USE_CPU=ON \
+          -DCMAKE_CXX_FLAGS="-march=native" && \
     cmake --build build -j$(nproc) && \
     cp $(find build -name libcore.so) /build/libcore.so
-
 
 # ============================
 FROM ubuntu:22.04 AS runtime
