@@ -48,10 +48,15 @@ RUN set -eux; \
     awk -v "repo=${VOICEVOX_ENGINE_REPO}" -v "tag=${VOICEVOX_ENGINE_TAG}" \
         '{ print "url = \"https://github.com/" repo "/releases/download/" tag "/" $0 "\"\noutput = \"" $0 "\"" }' \
         "${LIST_NAME}" > ./curl.txt; \
-    curl -fL --parallel --config ./curl.txt; \
-    7zr x "$(head -1 "${LIST_NAME}")"; \
+    mkdir tmp_linux_cpu; \
+    cd tmp_linux_cpu; \
+    curl -fL --parallel --config ../curl.txt; \
+    7zr x "$(head -1 ../${LIST_NAME})"; \
     rm -rf /opt/voicevox_engine/linux-cpu; \
-    mv linux-cpu /opt/voicevox_engine && rm -rf ./*
+    mv linux-cpu /opt/voicevox_engine; \
+    cd ..; \
+    rm -rf tmp_linux_cpu; \
+    rm -rf ./*
 
 
 # libcore.so 差し替え
