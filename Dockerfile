@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     clang \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
-
+    
 RUN git clone https://github.com/VOICEVOX/voicevox_core.git && \
     cd voicevox_core && \
     git fetch --tags && \
