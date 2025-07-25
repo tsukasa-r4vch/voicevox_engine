@@ -21,7 +21,7 @@ RUN git clone https://github.com/VOICEVOX/voicevox_core.git && \
     cd voicevox_core && \
     git checkout 0.15.2 && \
     git submodule update --init --recursive && \
-    cmake -B build -S core \
+    cmake -B build -S . \
           -DCMAKE_BUILD_TYPE=Release \
           -DVOICEVOX_CORE_USE_CPU=ON \
           -DCMAKE_CXX_FLAGS="-march=native" && \
