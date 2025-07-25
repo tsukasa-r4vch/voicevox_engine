@@ -6,7 +6,7 @@ cat /opt/voicevox_engine/README.md > /dev/stderr &
 ENGINE_PID=$!
 
 # エンジンの起動待ち
-for i in {1..20}; do
+for _ in {1..20}; do
   sleep 1
   if curl -sf "http://localhost:${PORT:-5000}/version" >/dev/null; then
     break
