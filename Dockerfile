@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y \
     
 RUN git clone --recurse-submodules https://github.com/VOICEVOX/voicevox_core.git && \
     cd voicevox_core && \
-    git checkout 0.15.2 && \
+    git checkout release-0.15 && \
     cd core && \
     cmake -B ../build -S . \
           -DCMAKE_BUILD_TYPE=Release \
