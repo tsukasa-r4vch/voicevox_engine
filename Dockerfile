@@ -52,7 +52,7 @@ RUN set -eux; \
     mv linux-cpu /opt/voicevox_engine && rm -rf ./*
 
 # libcore.so 差し替え
-COPY --from=builder /build/libcore.so /opt/voicevox_engine/core/libcore.so
+COPY --from=build-core /build/libcore.so /opt/voicevox_engine/core/libcore.so
 
 # Himari専用モデルだけ残す
 RUN find ./model/ -mindepth 1 -maxdepth 1 -type d ! -name "himari" -exec rm -rf {} +
