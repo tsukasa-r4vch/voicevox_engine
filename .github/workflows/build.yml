@@ -31,4 +31,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/tsukasa-r4vch/voicevox_engine:master
+          tags: ghcr.io/tsukasa-r4vch/voicevox_engine:latest
